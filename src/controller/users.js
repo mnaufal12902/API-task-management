@@ -1,6 +1,25 @@
 const Users = require("../models/users");
 const bcrypt = require("bcrypt");
 
+const getUsers = async (req, res) => {
+  try {
+    const data = await Users.findAll({
+      attributes: {
+        exclude: ['Pass']
+      }
+    })
+    res.json({
+      message: "Get data succes",
+      data: data
+    })
+  } catch (error) {
+    res.status(500).json({
+      message: "Internal server error",
+      serverMessage : error
+    })
+  }
+}
+
 const createUser = async (req, res) => {
   const { body } = req;
   const username = body.Username;
@@ -63,28 +82,16 @@ const updateUsers = async (req, res) => {
   const username = req.query.username;
   const searchUser = await Users.findByPk(username, { logging: false });
 
+
   if (searchUser === null) {
     res.status(401).json({
       message: "Data tidak ditemukan",
     });
   } else {
-    if (!body.Nama || !body.Pass || !body.Role) {
-      return res.status(400).json({
-        message: "Created Data Failed",
-        serverMessage: !body.Nama
-          ? "Nama tidak boleh kosong"
-          : !body.Pass
-          ? "Password tidak boleh kosong"
-          : !body.Role
-          ? "Role tidak boleh kosong"
-          : "",
-      });
-    } else {
       try {
         await Users.update(
           {
             Nama: body.Nama,
-            Pass: body.Pass,
             Role: body.Role,
           },
           {
@@ -104,7 +111,7 @@ const updateUsers = async (req, res) => {
           serverMessage: error,
         });
       }
-    }
+    // }
   }
 };
 
@@ -137,6 +144,7 @@ const deleteUsers = async (req, res) => {
 };
 
 module.exports = {
+  getUsers,
   createUser,
   updateUsers,
   deleteUsers,
